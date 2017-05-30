@@ -189,4 +189,9 @@
     <string name="exposure_value">%1$s</string>
     <string name="search_for_demo">Search for demo</string>
 
+    <string name="take_off">Take Off</string>
+    <string name="land_here">Land Here</string>
+    <string name="return_to_home">Return Home and Land</string>
+    <string name="circle">Circle</string>
+
 </resources>
