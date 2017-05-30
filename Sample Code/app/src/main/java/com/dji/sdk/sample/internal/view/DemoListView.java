@@ -28,6 +28,7 @@ import com.dji.sdk.sample.demo.flightcontroller.VirtualStickView;
 import com.dji.sdk.sample.demo.gimbal.GimbalCapabilityView;
 import com.dji.sdk.sample.demo.gimbal.MoveGimbalWithSpeedView;
 import com.dji.sdk.sample.demo.gimbal.PushGimbalDataView;
+import com.dji.sdk.sample.demo.ihs.IHSView;
 import com.dji.sdk.sample.demo.key.KeyedInterfaceView;
 import com.dji.sdk.sample.demo.missionoperator.WaypointMissionOperatorView;
 import com.dji.sdk.sample.demo.mobileremotecontroller.MobileRemoteControllerView;
@@ -70,6 +71,8 @@ public class DemoListView extends FrameLayout {
 
         // Build model for ListView
         ListBuilder builder = new ListBuilder();
+
+        builder.addGroup(R.string.ihs_group_title, false, new GroupItem(R.string.ihs_page_title, IHSView.class));
 
         builder.addGroup(R.string.component_listview_sdk_4_0,
                          false,

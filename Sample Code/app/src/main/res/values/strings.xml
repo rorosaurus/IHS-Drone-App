@@ -29,6 +29,8 @@
     <string name="component_listview_timeline_mission_control">Timeline Mission Control</string>
     <string name="component_listview_bluetooth">Bluetooth</string>
 
+    <string name="ihs_group_title">IHS Custom Group</string>
+    <string name="ihs_page_title">IHS Drone Project</string>
 
     <string name="component_listview_sdk_4.0">4.0 New Interfaces</string>
     <string name="component_listview_waypoint_mission_operator">New Waypoint Mission Operator</string>
