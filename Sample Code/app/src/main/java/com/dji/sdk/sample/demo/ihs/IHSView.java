@@ -23,6 +23,7 @@ import dji.common.mission.hotpoint.HotpointMission;
 import dji.common.mission.hotpoint.HotpointStartPoint;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.util.CommonCallbacks;
+import dji.keysdk.FlightControllerKey;
 import dji.keysdk.KeyManager;
 import dji.keysdk.callback.ActionCallback;
 import dji.keysdk.callback.GetCallback;
@@ -71,6 +72,27 @@ public class IHSView extends LinearLayout implements PresentableView {
         flightController = ((Aircraft) DJISampleApplication.getProductInstance()).getFlightController();
         hotpointMissionOperator = MissionControl.getInstance().getHotpointMissionOperator();
         setUpListeners();
+        configureSettings();
+    }
+
+    private void configureSettings(){
+        // ENABLE PRECISION LANDING FOR MOST ACCURATE RETURN TO HOME
+        flightController.getFlightAssistant().setPrecisionLandingEnabled(true, logCallback);
+        // ADD LISTENER TO AUTO-COMPLETE LANDING SEQUENCES
+        FlightControllerKey landingConf = FlightControllerKey.create(FlightControllerKey.IS_LANDING_CONFIRMATION_NEEDED);
+        KeyManager.getInstance().getValue(landingConf, new GetCallback() {
+                    @Override
+                    public void onSuccess(final @NonNull Object o) {
+                        if (o instanceof Boolean && (Boolean) o) {
+                            flightController.confirmLanding(logCallback);
+                        }
+                    }
+                    @Override
+                    public void onFailure(@NonNull DJIError djiError) {
+                        Log.e("IHS Error", djiError.toString());
+                    }
+                }
+        );
     }
 
     @Override
