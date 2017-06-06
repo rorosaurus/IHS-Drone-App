@@ -25,10 +25,26 @@
         style="@style/common_button"
     />
 
-    <Button
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/seekerText_title"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Circle Velocity: N/A°/sec\n(N/A secs for full rotation)" />
+
+    <ToggleButton
         android:id="@+id/ihs_circle_btn"
         android:layout_gravity="center_horizontal"
-        android:text="@string/circle"
+        android:textOff="@string/circle"
+        android:textOn="@string/stopCircle"
         style="@style/common_button"
         />
 

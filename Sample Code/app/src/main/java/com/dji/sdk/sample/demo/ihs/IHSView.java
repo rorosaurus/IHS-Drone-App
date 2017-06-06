@@ -7,8 +7,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.dji.sdk.sample.R;
 import com.dji.sdk.sample.internal.controller.DJISampleApplication;
@@ -41,7 +44,13 @@ public class IHSView extends LinearLayout implements PresentableView {
     private Button takeOffBtn;
     private Button landBtn;
     private Button returnHomeBtn;
-    private Button circleBtn;
+    private ToggleButton circleBtn;
+
+    private TextView circleText;
+    private SeekBar circleSeekBar;
+
+    private final int circleRadius = 5;
+    private int maxVelocity = (int) HotpointMissionOperator.maxAngularVelocityForRadius(circleRadius);
 
     private FlightController flightController;
     private HotpointMissionOperator hotpointMissionOperator;
@@ -130,24 +139,57 @@ public class IHSView extends LinearLayout implements PresentableView {
         });
 
         // this listener is triggered when the "circle" button is clicked
-        circleBtn.setOnClickListener(new OnClickListener() {
+        circleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                // find our current location.  we'll center the circle here.
-                LocationCoordinate3D droneLocation = flightController.getState().getAircraftLocation();
+            public void onCheckedChanged(CompoundButton compoundButton, boolean startCircling) {
+                if (startCircling) { // we just tapped start circle
 
-                // create a mission, using the lat/long of our current location and some other values we choose.
-                HotpointMission mission = new HotpointMission(
-                        new LocationCoordinate2D(droneLocation.getLatitude(), droneLocation.getLongitude()), // 2D point to circle around
-                        5, // altitude in meters (~16ft)
-                        5, // radius of circle in meters (~25ft)
-                        18, // angular velocity in degrees per second (full rotation in ~20 seconds)
-                        false, // move clockwise?
-                        HotpointStartPoint.NORTH, // where should the drone start to traverse the circle?
-                        HotpointHeading.TOWARDS_HOT_POINT // which way should the drone face while circling?
-                );
-                // start the mission!
-                hotpointMissionOperator.startMission(mission, logCallback);
+                    // find our current location.  we'll center the circle here.
+                    LocationCoordinate3D droneLocation = flightController.getState().getAircraftLocation();
+
+                    // determine if we want to go clockwise or not
+                    boolean clockwise = getAngVelocity() < 0;
+
+                    // create a mission, using the lat/long of our current location and some other values we choose.
+                    HotpointMission mission = new HotpointMission(
+                            new LocationCoordinate2D(droneLocation.getLatitude(), droneLocation.getLongitude()), // 2D point to circle around
+                            5, // altitude in meters (~16ft)
+                            circleRadius, // radius of circle in meters (~16ft)
+                            18, // angular velocity in degrees per second (full rotation in ~20 seconds)
+                            clockwise, // move clockwise?
+                            HotpointStartPoint.NORTH, // where should the drone start to traverse the circle?
+                            HotpointHeading.TOWARDS_HOT_POINT // which way should the drone face while circling?
+                    );
+                    // start the mission!
+                    hotpointMissionOperator.startMission(mission, logCallback);
+                }
+                else { // we just tapped stop circle
+                    hotpointMissionOperator.stop(logCallback);
+                }
+            }
+        });
+
+        // ADJUST CIRCLE VELOCITY
+        circleSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser) {
+                if(fromUser){
+                    // update the text bar
+                    setSeekerBarText();
+
+                    // update the seekerbar and the current mission
+                    hotpointMissionOperator.setAngularVelocity(getAngVelocity(), logCallback);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // unused
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // unused
             }
         });
     }
@@ -163,7 +205,42 @@ public class IHSView extends LinearLayout implements PresentableView {
         takeOffBtn = (Button) findViewById(R.id.ihs_take_off_btn);
         landBtn = (Button) findViewById(R.id.ihs_land_btn);
         returnHomeBtn = (Button) findViewById(R.id.ihs_return_home_btn);
-        circleBtn = (Button) findViewById(R.id.ihs_circle_btn);
+
+        circleBtn = (ToggleButton) findViewById(R.id.ihs_circle_btn);
+        circleText = (TextView) findViewById(R.id.seekerText_title);
+        circleSeekBar = (SeekBar) findViewById(R.id.seekBar);
+        circleSeekBar.setMax(maxVelocity*2); // twice as long so we can do pos and negative
+        circleSeekBar.setProgress((maxVelocity*3)/2);  // default angular velocity is half max
+        setSeekerBarText();
+    }
+
+    private int getAngVelocity() {
+        // calculate the expected velocity
+        return circleSeekBar.getProgress() - maxVelocity;
+    }
+
+    private void setSeekerBarText(){
+        // calculate the expected velocity
+        int angVelocity = getAngVelocity();
+
+        // update the text
+        if(angVelocity == 0){
+            setText(circleText, "Circle Velocity: 0°/sec\n(infinity secs for full rotation)");
+        }
+        else {
+            setText(circleText, "Circle Velocity: "+ (angVelocity) + "°/sec"
+                    + "\n(" + 360/(Math.abs(angVelocity)) + " secs for full rotation)");
+        }
+    }
+
+    private void setText(final TextView tv, final String text) {
+        tv.post(new Runnable() {
+            @Override
+            public void run() {
+
+                tv.setText(text);
+            }
+        });
     }
 
     @Override
